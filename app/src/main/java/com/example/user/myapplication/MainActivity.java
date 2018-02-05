@@ -18,7 +18,8 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-
+import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -49,13 +50,32 @@ public class MainActivity extends AppCompatActivity {
         {
             //已經有權限
             Toast.makeText(this,"有權限" ,Toast.LENGTH_SHORT).show();
-            readContacts();
+            readContacts2();
         }
 
         list = (ListView)findViewById(R.id.list);
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_1,cursor,
-                new String[]{ContactsContract.Contacts.DISPLAY_NAME},new int[]{android.R.id.text1},0);
+        /*
+        //SimpleCursorAdapter參數
+        1.Context
+        2.版面配置檔的資源,有內建的也可以自行設計
+        3.查詢內容提供者所得到的Cursor物件
+        4.想要顯示的欄位
+        5.資料顯示的元件ID陣列
+        6.int flag 0表示listview在顯示的過程中,如果資料被更動了,不會自動重新查詢
+         */
+
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_2,cursor,
+                new String[]{Contacts.DISPLAY_NAME,Phone.NUMBER},new int[]{android.R.id.text1,android.R.id.text2},0);
         list.setAdapter(adapter);
+
+        /*
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_1,cursor,
+                new String[]{Contacts.DISPLAY_NAME},new int[]{android.R.id.text1},0);
+        list.setAdapter(adapter);
+        */
+
+
 
     }
     //不論使用者同意會拒絕都會自動執行 onRequestPermissionsResult
@@ -67,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             case request_contacts:
                 if (grantResults.length > 0 && grantResults[0] ==PackageManager.PERMISSION_GRANTED)
                 {   //同意取得權限要做的事
-                    readContacts();
+                    readContacts2();
                 }
                 else//沒有同意取得權限要做的事
                 {
@@ -80,7 +100,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void readContacts3()
+    {
+        ContentResolver resolver = getContentResolver();
 
+        cursor = resolver.query(Contacts.CONTENT_URI,null,null,
+                null,null,null);
+
+    }
+
+
+    private void readContacts2()
+    {
+        ContentResolver resolver = getContentResolver();
+        String[] projection = {Contacts._ID,Contacts.DISPLAY_NAME,Phone.NUMBER};
+        cursor = resolver.query(Phone.CONTENT_URI,projection,null,
+                null,null,null);
+
+    }
 
     private void readContacts() {
         ContentResolver resolver = getContentResolver();
